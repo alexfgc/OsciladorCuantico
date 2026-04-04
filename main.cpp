@@ -28,6 +28,7 @@ float clip_x = 0.0f, clip_y = 0.0f, clip_z = 0.0f;
 float color_scale = 1.0f;
 float time_val = 0.0f;
 float delta_e = 0.0f;
+const float HALF_PI = 1.57079632679f;
 
 double get_normalization(int n, double omega) {
     return std::pow(omega / M_PI, 0.25) / std::sqrt(std::pow(2.0, n) * std::tgamma(n + 1.0));
@@ -136,6 +137,24 @@ extern "C" {
     EMSCRIPTEN_KEEPALIVE
     float get_camera_zoom() {
         return zoom;
+    }
+
+    EMSCRIPTEN_KEEPALIVE
+    void align_view_axis(int axis) {
+        // 0 = X, 1 = Y, 2 = Z
+        if (axis == 0) {
+            yaw = HALF_PI;
+            pitch = 0.0f;
+        } else if (axis == 1) {
+            yaw = 0.0f;
+            pitch = -HALF_PI;
+        } else {
+            yaw = 0.0f;
+            pitch = 0.0f;
+        }
+
+        yaw_velocity = 0.0f;
+        pitch_velocity = 0.0f;
     }
 }
 

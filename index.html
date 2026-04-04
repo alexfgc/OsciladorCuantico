@@ -243,6 +243,34 @@
         .slider-group { margin-bottom: 20px; margin-right: 5px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; }
 
+        .axis-align-group {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .axis-align-btn {
+            padding: 9px 8px;
+            border: 1px solid #4f6576;
+            border-radius: 8px;
+            background: rgba(22, 42, 54, 0.9);
+            color: #eef8ff;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .axis-align-btn:hover {
+            background: rgba(32, 56, 72, 0.95);
+        }
+
+        .axis-align-btn:focus-visible {
+            outline: 2px solid #9fe8ff;
+            outline-offset: 2px;
+        }
+
         #code-explanation-section {
             width: 100%;
             background-color: #1a1a1a;
@@ -636,15 +664,11 @@
                 <input type="range" id="color_scale" min="0.1" max="10.0" step="0.1" value="1.0" oninput="actualizarColorScale()">
             </div>
 
-            <h3>Recorte Espacial</h3>
-            <div class="slider-group">
-                <label><input type="checkbox" id="clip_x" onchange="actualizarClipping()"> Recortar X positivo</label>
-            </div>
-            <div class="slider-group">
-                <label><input type="checkbox" id="clip_y" onchange="actualizarClipping()"> Recortar Y positivo</label>
-            </div>
-            <div class="slider-group">
-                <label><input type="checkbox" id="clip_z" onchange="actualizarClipping()"> Recortar Z positivo</label>
+            <h3>Alineacion Espacial</h3>
+            <div class="axis-align-group">
+                <button type="button" class="axis-align-btn" onclick="alinearEje('x')">Eje X</button>
+                <button type="button" class="axis-align-btn" onclick="alinearEje('y')">Eje Y</button>
+                <button type="button" class="axis-align-btn" onclick="alinearEje('z')">Eje Z</button>
             </div>
         </div>
 
@@ -852,20 +876,22 @@
             }
         }
 
-        function actualizarClipping() {
-            // Leer el estado de los checkboxes de recorte
-            const clipX = document.getElementById('clip_x').checked ? 1 : 0;
-            const clipY = document.getElementById('clip_y').checked ? 1 : 0;
-            const clipZ = document.getElementById('clip_z').checked ? 1 : 0;
+        function alinearEje(axis) {
+            const axisMap = { x: 0, y: 1, z: 2 };
+            const axisIndex = axisMap[axis];
+            if (axisIndex === undefined) return;
 
-            // Llamar a la función C++ para actualizar el recorte
-            if (typeof Module !== 'undefined' && Module._update_clipping) {
-                Module.ccall(
-                    'update_clipping',      // Nombre de la función en C++
-                    'null',                 // Tipo de retorno
-                    ['number', 'number', 'number'], // Tipos de los argumentos
-                    [clipX, clipY, clipZ]   // Argumentos
-                );
+            if (typeof Module !== 'undefined' && Module.ccall) {
+                try {
+                    Module.ccall(
+                        'align_view_axis',
+                        'null',
+                        ['number'],
+                        [axisIndex]
+                    );
+                } catch (error) {
+                    // Si la build actual no expone el símbolo, no romper la UI.
+                }
             }
         }
 
@@ -885,7 +911,6 @@
 
         actualizarSimulacion();
         actualizarColorScale();
-        actualizarClipping();
     </script>
 
     <script>
