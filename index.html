@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Oscilador Armónico Cuántico 3D</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: radial-gradient(circle at top right, #2c2f3a 0%, #1e1e1e 45%, #141414 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            margin: 0;
+            min-height: 100vh;
+            gap: 0;
+        }
+
+        #page-intro {
+            padding: 18px 18px 6px;
+            max-width: 760px;
+        }
+
+        #page-main-title {
+            margin: 0;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: clamp(30px, 4vw, 46px);
+            line-height: 1.05;
+            letter-spacing: 0.6px;
+            color: #f4fcff;
+        }
+
+        #page-intro-text {
+            margin: 10px 0 0;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #cfd6dc;
+            max-width: 720px;
+        }
+
+        #page-reading-guide {
+            margin: 14px 0 0;
+            max-width: 720px;
+            padding: 10px 12px;
+            border: 1px solid #3e4e5a;
+            border-radius: 8px;
+            background: rgba(18, 30, 38, 0.55);
+        }
+
+        #page-reading-guide-title {
+            margin: 0 0 6px;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            color: #9fe8ff;
+            text-transform: uppercase;
+        }
+
+        .reading-guide-line {
+            margin: 5px 0;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.45;
+            color: #d9e4ea;
+        }
+
+        .reading-guide-label {
+            color: #f5fbff;
+            font-weight: 700;
+        }
+
+        #app-layout {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            width: 100%;
+        }
+
+        #controles { 
+            width: 300px; 
+            padding: 20px; 
+            padding-right: 10px;
+            background-color: #2d2d2d; 
+            max-height: 95vh; 
+            overflow-y: auto;
+            box-sizing: border-box;
+            margin: 12px 0 12px 12px;
+            border: 1px solid #3f3f3f;
+            border-radius: 12px;
+        }
+        
+        /* Estilizar la barra de desplazamiento (Webkit: Chrome, Safari, Edge) */
+        #controles::-webkit-scrollbar {
+            width: 8px;
+        }
+        #controles::-webkit-scrollbar-track {
+            background: #2d2d2d;
+        }
+        #controles::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+        #controles::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+        
+        /* Para navegadores Firefox */
+        #controles {
+            scrollbar-width: thin;
+            scrollbar-color: #555 #2d2d2d;
+        }
+
+        #main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 12px 16px 12px 0;
+            gap: 14px;
+            min-width: 0;
+        }
+
+        #canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(17, 17, 17, 0.72);
+            border: 1px solid #3d3d3d;
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        canvas {
+            background-color: #000;
+            border: 1px solid #444;
+            width: min(100%, 980px);
+            height: auto;
+            aspect-ratio: 4 / 3;
+            border-radius: 8px;
+        }
+
+        .slider-group { margin-bottom: 20px; margin-right: 5px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+
+        #code-explanation-section {
+            width: 100%;
+            background-color: #1a1a1a;
+            padding: 40px 0;
+            margin-top: 0;
+            border-top: 1px solid #3d3d3d;
+        }
+
+        #code-section-title {
+            margin: 0 0 18px;
+            text-align: center;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 20px;
+            font-weight: 700;
+            color: #e9f7ff;
+            letter-spacing: 0.4px;
+        }
+
+        #code-container {
+            margin-left: 14vw;
+            margin-right: 14vw;
+            background-color: transparent !important;
+            border: none;
+            border-radius: 8px;
+            padding: 24px 0;
+            overflow: visible;
+        }
+
+        #code-content {
+            font-family: 'Courier New', 'Consolas', monospace;
+            background-color: transparent !important;
+            border: none;
+            box-shadow: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .code-block {
+            overflow: visible;
+            margin: 0;
+            padding: 0;
+            position: relative;
+            width: 100%;
+            box-sizing: border-box;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .code-block + .code-block {
+            margin-top: 0;
+        }
+
+        .code-slide {
+            display: block;
+            width: 100%;
+            transform: translateX(0);
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .code-block:hover .code-slide {
+            transform: translateX(0);
+        }
+
+        .code-pane {
+            width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .code-block:hover .code-pane {
+            transform: translateX(-3%);
+        }
+
+        .code-block:hover {
+            transform: translateX(-14vw);
+            z-index: 3;
+        }
+
+        .code-pane pre {
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #ffffff;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            background-color: transparent !important;
+            border: none;
+            box-shadow: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .explain-pane {
+            position: absolute;
+            top: 0;
+            left: 100%;
+            min-height: 100%;
+            width: 0;
+            padding: 6px 12px 10px;
+            box-sizing: border-box;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: opacity 0.35s ease, transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            pointer-events: none;
+            display: block;
+            overflow: visible;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        .code-block.show-explain .explain-pane {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .explain-title {
+            margin: 0;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.25;
+            color: #00FFFF;
+            font-weight: 700;
+        }
+
+        .explain-body {
+            margin: 6px 0 0;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 12px;
+            line-height: 1.55;
+            color: #d8d8d8;
+        }
+
+        /* Syntax Highlighting Classes */
+        .syn-keyword {
+            color: #FF7F50;
+        }
+
+        .syn-punct {
+            color: #00FFFF;
+        }
+
+        .syn-comment {
+            color: #A9A9A9;
+        }
+
+        .syn-linenum {
+            color: #6FA8DC;
+        }
+
+        @media (max-width: 1080px) {
+            #page-intro {
+                padding: 14px 12px 6px;
+            }
+
+            #page-main-title {
+                font-size: clamp(24px, 6vw, 34px);
+            }
+
+            #page-intro-text {
+                font-size: 13px;
+                line-height: 1.45;
+            }
+
+            #controles {
+                width: calc(100% - 24px);
+                max-height: 45vh;
+                margin: 12px;
+            }
+
+            #main-content {
+                padding: 0 12px 12px;
+            }
+
+            #code-container {
+                margin-left: 12px;
+                margin-right: 12px;
+            }
+
+            #app-layout {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .code-slide {
+                width: 100%;
+                transform: none !important;
+            }
+
+            .code-block:hover .code-pane {
+                transform: none;
+            }
+
+            .explain-pane {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header id="page-intro">
+        <h1 id="page-main-title">Oscilador Cuantico 3D</h1>
+        <p id="page-intro-text">Esta simulacion representa un oscilador armonico anisotropo, donde la fuerza restauradora no es igual en los tres ejes: cada direccion espacial (x, y, z) tiene su propia frecuencia y por eso la funcion de onda adopta estructuras diferentes segun el eje, con nodos y regiones de mayor probabilidad caracteristicos. La escena muestra una superposicion de dos estados cuanticos y su interferencia temporal: cada estado evoluciona con su fase, y la diferencia de energia entre ambos produce oscilaciones en el patron de probabilidad, haciendo que la intensidad espacial se redistribuya periodicamente en el tiempo.</p>
+        <div id="page-reading-guide">
+            <p id="page-reading-guide-title">Como leer la visualizacion</p>
+            <p class="reading-guide-line"><span class="reading-guide-label">Particulitas:</span> no son trayectorias clasicas ni particulas individuales; son muestras de la distribucion de probabilidad de presencia. Donde la nube se ve mas densa, la deteccion es mas probable.</p>
+            <p class="reading-guide-line"><span class="reading-guide-label">Colores:</span> representan la intensidad local de la probabilidad e interferencia. Tonos oscuros indican contribucion baja, tonos intermedios (violeta/amarillo) valores crecientes y tonos claros o blancos las zonas de maxima intensidad.</p>
+        </div>
+    </header>
+
+    <div id="app-layout">
+        <div id="controles">
+            <h2>Controles Cuánticos</h2>
+            <p>Oscilador anisótropo con superposición de dos estados:</p>
+
+            <h3>Frecuencias</h3>
+            <div class="slider-group">
+                <label>omega_x: <span id="wx_val">1.0</span></label>
+                <input type="range" id="wx" min="0.2" max="3.0" step="0.1" value="1.0" oninput="actualizarSimulacion()">
+            </div>
+            <div class="slider-group">
+                <label>omega_y: <span id="wy_val">1.0</span></label>
+                <input type="range" id="wy" min="0.2" max="3.0" step="0.1" value="1.0" oninput="actualizarSimulacion()">
+            </div>
+            <div class="slider-group">
+                <label>omega_z: <span id="wz_val">1.0</span></label>
+                <input type="range" id="wz" min="0.2" max="3.0" step="0.1" value="1.0" oninput="actualizarSimulacion()">
+            </div>
+
+            <h3>Estado A</h3>
+            <div class="slider-group">
+                <label>n_xA: <span id="nxA_val">0</span></label>
+                <input type="range" id="nxA" min="0" max="10" value="0" oninput="actualizarSimulacion()">
+            </div>
+            <div class="slider-group">
+                <label>n_yA: <span id="nyA_val">0</span></label>
+                <input type="range" id="nyA" min="0" max="10" value="0" oninput="actualizarSimulacion()">
+            </div>
+            <div class="slider-group">
+                <label>n_zA: <span id="nzA_val">0</span></label>
+                <input type="range" id="nzA" min="0" max="10" value="0" oninput="actualizarSimulacion()">
+            </div>
+
+            <h3>Estado B</h3>
+            <div class="slider-group">
+                <label>n_xB: <span id="nxB_val">1</span></label>
+                <input type="range" id="nxB" min="0" max="10" value="1" oninput="actualizarSimulacion()">
+            </div>
+            <div class="slider-group">
+                <label>n_yB: <span id="nyB_val">0</span></label>
+                <input type="range" id="nyB" min="0" max="10" value="0" oninput="actualizarSimulacion()">
+            </div>
+            <div class="slider-group">
+                <label>n_zB: <span id="nzB_val">0</span></label>
+                <input type="range" id="nzB" min="0" max="10" value="0" oninput="actualizarSimulacion()">
+            </div>
+
+            <div class="slider-group">
+                <label>Escala de color: <span id="color_scale_val">1.0</span></label>
+                <input type="range" id="color_scale" min="0.1" max="10.0" step="0.1" value="1.0" oninput="actualizarColorScale()">
+            </div>
+
+            <h3>Recorte Espacial</h3>
+            <div class="slider-group">
+                <label><input type="checkbox" id="clip_x" onchange="actualizarClipping()"> Recortar X positivo</label>
+            </div>
+            <div class="slider-group">
+                <label><input type="checkbox" id="clip_y" onchange="actualizarClipping()"> Recortar Y positivo</label>
+            </div>
+            <div class="slider-group">
+                <label><input type="checkbox" id="clip_z" onchange="actualizarClipping()"> Recortar Z positivo</label>
+            </div>
+        </div>
+
+        <div id="main-content">
+            <div id="canvas-container">
+                <canvas id="canvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="code-explanation-section">
+        <h2 id="code-section-title">Explicacion de Codigo</h2>
+        <div id="code-container">
+                <pre id="code-content">// ================= INCLUSIONES =================
+
+    1   #include &lt;cmath&gt;                           // Funciones matemáticas del oscilador
+    2   #include &lt;random&gt;                          // Generación aleatoria
+    3   #include &lt;vector&gt;                           // Almacenamiento de partículas
+    4   #include &lt;emscripten.h&gt;                     // Bucle WebAssembly en navegador
+    5   #include &lt;GLES2/gl2.h&gt;                      // Renderizado WebGL
+    6   #include &lt;GLFW/glfw3.h&gt;                     // Ventana y contexto OpenGL
+
+    // ================= PARÁMETROS FÍSICOS =================
+
+    10  const double X_MAX = 5.0;                    // Tamaño del dominio espacial
+    11  const int NUM_PARTICLES = 150000;             // Cantidad de puntos de la nube
+    12  const double REJECTION_THRESHOLD = 0.0001;    // Umbral del muestreo por rechazo
+    13  std::vector&lt;float&gt; voxel_data;               // [x, y, z, ψA, ψB]
+    14  std::mt19937 gen(std::random_device{}());     // Motor aleatorio
+    15  std::uniform_real_distribution&lt;double&gt; dist_space(-X_MAX, X_MAX); // Posiciones uniformes
+    16  float time_val = 0.0f;                        // Tiempo de evolución
+    17  float delta_e = 0.0f;                         // Diferencia de energía entre estados
+    18  GLuint program, vbo;                          // Programa shader y búfer
+
+    // ================= FUNCIONES DE ONDA =================
+
+    24  double get_normalization(int n, double omega) {
+    25      return std::pow(omega / M_PI, 0.25) /
+    26             std::sqrt(std::pow(2.0, n) * std::tgamma(n + 1.0)); // Normalización
+    27  }
+    28  double psi_1d(int n, double x, double omega) {
+    29      double q = x * std::sqrt(omega);           // Coordenada adimensional
+    30      return get_normalization(n, omega) *
+    31             std::hermite(n, q) * std::exp(-0.5 * q * q); // ψ_n(x)
+    32  }
+
+    // ================= MUESTREO POR RECHAZO =================
+
+    40  extern "C" EMSCRIPTEN_KEEPALIVE void update_quantum_state(
+    41      int nxA, int nyA, int nzA, int nxB, int nyB, int nzB,
+    42      float wx, float wy, float wz) {
+    43      double omega_x = std::max(0.05, static_cast&lt;double&gt;(wx));
+    44      double omega_y = std::max(0.05, static_cast&lt;double&gt;(wy));
+    45      double omega_z = std::max(0.05, static_cast&lt;double&gt;(wz));
+    46      delta_e = static_cast&lt;float&gt;(
+    47          (omega_x * (nxB + 0.5) + omega_y * (nyB + 0.5) + omega_z * (nzB + 0.5)) -
+    48          (omega_x * (nxA + 0.5) + omega_y * (nyA + 0.5) + omega_z * (nzA + 0.5))
+    49      ); // ΔE
+    50      voxel_data.clear();
+    51      voxel_data.reserve(NUM_PARTICLES * 5);
+    52      int accepted = 0;
+    53      while (accepted &lt; NUM_PARTICLES) {
+    54          double x = dist_space(gen), y = dist_space(gen), z = dist_space(gen); // Muestreo uniforme
+    55          double psiA = psi_1d(nxA, x, omega_x) *
+    56                        psi_1d(nyA, y, omega_y) *
+    57                        psi_1d(nzA, z, omega_z); // ψ_A
+    58          double psiB = psi_1d(nxB, x, omega_x) *
+    59                        psi_1d(nyB, y, omega_y) *
+    60                        psi_1d(nzB, z, omega_z); // ψ_B
+    61          if (psiA * psiA + psiB * psiB &gt; REJECTION_THRESHOLD) { // Aceptación por probabilidad
+    62              voxel_data.push_back(static_cast&lt;float&gt;(x));
+    63              voxel_data.push_back(static_cast&lt;float&gt;(y));
+    64              voxel_data.push_back(static_cast&lt;float&gt;(z));
+    65              voxel_data.push_back(static_cast&lt;float&gt;(psiA));
+    66              voxel_data.push_back(static_cast&lt;float&gt;(psiB));
+    67              ++accepted;
+    68          }
+    69      }
+    70      glBindBuffer(GL_ARRAY_BUFFER, vbo); // Enviar datos a la GPU
+    71      glBufferData(GL_ARRAY_BUFFER, voxel_data.size() * sizeof(float), voxel_data.data(), GL_STATIC_DRAW);
+    72  }
+
+    // ================= SHADERS =================
+
+    70  const char* vertex_shader_src = R"(
+    71      attribute vec3 a_pos;               // Posición de la partícula
+    72      attribute float a_psiA;             // Amplitud del estado A
+    73      attribute float a_psiB;             // Amplitud del estado B
+    74      varying vec3 v_pos;
+    75      varying float v_psiA;
+    76      varying float v_psiB;
+    77      uniform float u_yaw;                // Rotación horizontal
+    78      uniform float u_pitch;              // Rotación vertical
+    79      uniform float u_zoom;               // Escala de vista
+    80      void main() {
+    81          mat3 rotY = mat3(cos(u_yaw), 0.0, -sin(u_yaw),
+    82                           0.0, 1.0, 0.0,
+    83                           sin(u_yaw), 0.0, cos(u_yaw)); // Giro Y
+    84          mat3 rotX = mat3(1.0, 0.0, 0.0,
+    85                           0.0, cos(u_pitch), sin(u_pitch),
+    86                           0.0, -sin(u_pitch), cos(u_pitch)); // Giro X
+    87          v_pos = a_pos; v_psiA = a_psiA; v_psiB = a_psiB;
+    88          gl_Position = vec4(rotY * rotX * (a_pos * 0.2 * u_zoom), 1.0); // Posición final
+    85          gl_PointSize = 3.0;
+    86      }
+    87  )";
+
+    89  const char* fragment_shader_src = R"(
+    90      precision mediump float;
+    91      varying vec3 v_pos;                 // Posición del punto
+    92      varying float v_psiA;               // Amplitud A
+    93      varying float v_psiB;               // Amplitud B
+    94      uniform float u_color_scale;        // Escala de color
+    95      uniform float u_time;               // Tiempo
+    96      uniform float u_delta_e;            // Diferencia de energía
+    97      void main() {
+    98          float p = 0.5 * v_psiA * v_psiA + 0.5 * v_psiB * v_psiB +
+    99                    v_psiA * v_psiB * cos(u_delta_e * u_time); // Interferencia
+    100         float mapped = clamp(
+    101             log(1.0 + max(p, 0.0) * 30.0 * max(0.1, u_color_scale) * 25.0) /
+    102             log(1.0 + max(0.1, u_color_scale) * 25.0), 0.0, 1.0
+    103         ); // Escala logarítmica
+    104         vec3 c = mix(
+    105             mix(
+    106                 mix(vec3(0.0), vec3(0.5, 0.0, 0.5), smoothstep(0.0, 0.20, mapped)),
+    107                 vec3(1.0, 1.0, 0.0),
+    108                 smoothstep(0.20, 0.72, mapped)
+    109             ),
+    110             vec3(1.0),
+    111             smoothstep(0.72, 1.0, mapped)
+    112         );
+    113         gl_FragColor = vec4(c, 0.75);
+    102     }
+    103 )";
+
+    // ================= BUCLE Y ARRANQUE =================
+
+    110 void render_loop() {
+    111     time_val += 0.016f;                         // Avance temporal
+    112     glClear(GL_COLOR_BUFFER_BIT);               // Limpiar pantalla
+    113     glUseProgram(program);                      // Activar shader
+    114     glUniform1f(glGetUniformLocation(program, "u_time"), time_val);
+    115     glUniform1f(glGetUniformLocation(program, "u_delta_e"), delta_e);
+    116     glBindBuffer(GL_ARRAY_BUFFER, vbo);         // Usar búfer de partículas
+    117     glDrawArrays(GL_POINTS, 0, static_cast&lt;GLsizei&gt;(voxel_data.size() / 5)); // Dibujar nube
+    118     glfwSwapBuffers(window);                    // Mostrar fotograma
+    119     glfwPollEvents();                           // Procesar eventos
+    120 }
+
+    122 int main() {
+    123     glfwInit();                                  // Inicializar ventana
+    124     window = glfwCreateWindow(800, 600, "Oscilador", nullptr, nullptr); // Crear ventana
+    125     glfwMakeContextCurrent(window);              // Activar contexto
+    126     glEnable(GL_BLEND);                          // Habilitar alfa
+    127     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // Modo de mezcla
+    128     program = glCreateProgram();                 // Crear programa shader
+    129     glAttachShader(program, compile_shader(GL_VERTEX_SHADER, vertex_shader_src));
+    130     glAttachShader(program, compile_shader(GL_FRAGMENT_SHADER, fragment_shader_src));
+    131     glLinkProgram(program);
+    132     glGenBuffers(1, &vbo);                       // Crear búfer GPU
+    133     update_quantum_state(0, 0, 0, 1, 0, 0, 1.0f, 1.0f, 1.0f); // Estado inicial
+    134     emscripten_set_main_loop(render_loop, 0, 1); // Iniciar animación
+    135     return 0;
+    136 }</pre>
+        </div>
+    </div>
+
+    <script>
+        var Module = {
+            canvas: document.getElementById('canvas')
+        };
+    </script>
+
+    <script src="motor_cuantico.js"></script>
+    
+    <script>
+        function actualizarSimulacion() {
+            const wx = parseFloat(document.getElementById('wx').value);
+            const wy = parseFloat(document.getElementById('wy').value);
+            const wz = parseFloat(document.getElementById('wz').value);
+            const nxA = parseInt(document.getElementById('nxA').value, 10);
+            const nyA = parseInt(document.getElementById('nyA').value, 10);
+            const nzA = parseInt(document.getElementById('nzA').value, 10);
+            const nxB = parseInt(document.getElementById('nxB').value, 10);
+            const nyB = parseInt(document.getElementById('nyB').value, 10);
+            const nzB = parseInt(document.getElementById('nzB').value, 10);
+
+            document.getElementById('wx_val').innerText = wx.toFixed(1);
+            document.getElementById('wy_val').innerText = wy.toFixed(1);
+            document.getElementById('wz_val').innerText = wz.toFixed(1);
+            document.getElementById('nxA_val').innerText = nxA;
+            document.getElementById('nyA_val').innerText = nyA;
+            document.getElementById('nzA_val').innerText = nzA;
+            document.getElementById('nxB_val').innerText = nxB;
+            document.getElementById('nyB_val').innerText = nyB;
+            document.getElementById('nzB_val').innerText = nzB;
+
+            if (typeof Module !== 'undefined' && Module._update_quantum_state) {
+                Module.ccall(
+                    'update_quantum_state',
+                    'null',
+                    ['number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number'],
+                    [nxA, nyA, nzA, nxB, nyB, nzB, wx, wy, wz]
+                );
+            }
+        }
+
+        function actualizarClipping() {
+            // Leer el estado de los checkboxes de recorte
+            const clipX = document.getElementById('clip_x').checked ? 1 : 0;
+            const clipY = document.getElementById('clip_y').checked ? 1 : 0;
+            const clipZ = document.getElementById('clip_z').checked ? 1 : 0;
+
+            // Llamar a la función C++ para actualizar el recorte
+            if (typeof Module !== 'undefined' && Module._update_clipping) {
+                Module.ccall(
+                    'update_clipping',      // Nombre de la función en C++
+                    'null',                 // Tipo de retorno
+                    ['number', 'number', 'number'], // Tipos de los argumentos
+                    [clipX, clipY, clipZ]   // Argumentos
+                );
+            }
+        }
+
+        function actualizarColorScale() {
+            const colorScale = parseFloat(document.getElementById('color_scale').value);
+            document.getElementById('color_scale_val').innerText = colorScale.toFixed(1);
+
+            if (typeof Module !== 'undefined' && Module._update_color_scale) {
+                Module.ccall(
+                    'update_color_scale',
+                    'null',
+                    ['number'],
+                    [colorScale]
+                );
+            }
+        }
+
+        actualizarSimulacion();
+        actualizarColorScale();
+        actualizarClipping();
+    </script>
+
+    <script>
+        // Hover reveal por bloques + resaltado de sintaxis
+        document.addEventListener('DOMContentLoaded', () => {
+            const originalCodeElement = document.getElementById('code-content');
+            if (!originalCodeElement) return;
+
+            const rawText = originalCodeElement.innerText;
+            const lines = rawText.split('\n');
+            const headerRegex = /^\s*\/\/\s*=+\s*(.+?)\s*=+\s*$/;
+
+            const sectionExplanations = {
+                'INCLUSIONES': 'Este bloque reúne las dependencias que hacen posible toda la simulación: librerías matemáticas para evaluar funciones especiales, generadores pseudoaleatorios para el muestreo estadístico, estructuras de datos para almacenar la nube y cabeceras de Emscripten/WebGL para ejecutar C++ en el navegador con aceleración por GPU. En términos prácticos, conecta el modelo cuántico con el entorno gráfico interactivo.',
+                'PARÁMETROS FÍSICOS': 'Aquí se define el dominio espacial del problema (X_MAX), la resolución estadística de la visualización (NUM_PARTICLES) y el umbral de aceptación del muestreo. Además, se almacenan variables de estado como el tiempo y la diferencia energética delta_e, que controla la fase relativa entre estados. Este bloque fija la escala física y numérica de toda la simulación.',
+                'FUNCIONES DE ONDA': 'Se implementa la forma analítica del oscilador armónico 1D: psi_n(x) = N_n * H_n(q) * exp(-q^2/2), con q = x * sqrt(omega). La normalización garantiza probabilidad total unitaria, y los polinomios de Hermite codifican la estructura nodal de cada número cuántico n. Estas funciones son el núcleo físico del modelo porque determinan dónde la partícula es más probable.',
+                'MUESTREO POR RECHAZO': 'Este bloque calcula primero las energías de los dos estados (A y B) y su diferencia delta_e. Luego genera candidatos de posición en el cubo espacial y evalúa psi_A y psi_B en cada punto. Solo se aceptan puntos donde la densidad combinada supera el umbral, construyendo una nube que aproxima la distribución de probabilidad cuántica. Finalmente, los datos se transfieren al búfer de GPU para renderizado masivo.',
+                'SHADERS': 'El vertex shader aplica rotaciones y escala para proyectar correctamente la nube en pantalla, preservando la estructura espacial de la función de onda. El fragment shader calcula el brillo/color a partir de la densidad y el término de interferencia temporal cos(delta_e * t), mostrando oscilaciones de fase entre estados superpuestos. La escala logarítmica y el gradiente cromático permiten ver tanto regiones de baja como de alta probabilidad en una misma imagen.',
+                'BUCLE Y ARRANQUE': 'En el arranque se crea el contexto gráfico, se compilan y enlazan shaders, se reserva memoria de GPU y se inicializa el primer estado cuántico. En el bucle principal se actualiza el tiempo, se envían uniformes físicos (como delta_e) y se dibuja la nube en cada fotograma. Este bloque cierra el ciclo completo: teoría cuántica, discretización numérica y visualización dinámica en tiempo real.'
+            };
+
+            const sections = [];
+            let current = null;
+            lines.forEach((line) => {
+                const headerMatch = line.match(headerRegex);
+                if (headerMatch) {
+                    if (current) sections.push(current);
+                    current = { title: headerMatch[1].trim(), lines: [line] };
+                } else if (current) {
+                    current.lines.push(line);
+                }
+            });
+            if (current) sections.push(current);
+            if (!sections.length) return;
+
+            // Quitar líneas en blanco sobrantes para que el bloque se vea continuo en reposo.
+            sections.forEach((section) => {
+                while (section.lines.length > 1 && section.lines[section.lines.length - 1].trim() === '') {
+                    section.lines.pop();
+                }
+            });
+
+            const container = document.createElement('div');
+            container.id = 'code-content';
+
+            sections.forEach((section) => {
+                const block = document.createElement('div');
+                block.className = 'code-block';
+
+                const slide = document.createElement('div');
+                slide.className = 'code-slide';
+
+                const codePane = document.createElement('div');
+                codePane.className = 'code-pane';
+
+                const pre = document.createElement('pre');
+                pre.textContent = section.lines.join('\n');
+                codePane.appendChild(pre);
+
+                const explainPane = document.createElement('div');
+                explainPane.className = 'explain-pane';
+
+                const explanationText = sectionExplanations[section.title] || 'Fragmento central de la simulación cuántica: conecta el modelo físico con su representación visual en la GPU.';
+                const title = document.createElement('div');
+                title.className = 'explain-title';
+                title.textContent = section.title;
+
+                const body = document.createElement('p');
+                body.className = 'explain-body';
+                body.textContent = explanationText;
+
+                explainPane.appendChild(title);
+                explainPane.appendChild(body);
+
+                slide.appendChild(codePane);
+                slide.appendChild(explainPane);
+                block.appendChild(slide);
+                container.appendChild(block);
+            });
+
+            originalCodeElement.replaceWith(container);
+
+            function updateExplainPaneLayout(block) {
+                const explainPane = block.querySelector('.explain-pane');
+                if (!explainPane) return;
+
+                const blockRect = block.getBoundingClientRect();
+                const viewportWidth = document.documentElement.clientWidth;
+                const hoverShiftPx = viewportWidth * 0.14;
+                const projectedRightEdge = blockRect.right - hoverShiftPx;
+                const codeShiftPx = blockRect.width * 0.03;
+                const insetFromCodeEdge = Math.max(10, Math.min(24, codeShiftPx * 0.75));
+                const availableRightSpace = Math.max(0, viewportWidth - projectedRightEdge - 16 + insetFromCodeEdge);
+                explainPane.style.left = `calc(100% - ${insetFromCodeEdge}px)`;
+                explainPane.style.width = `${availableRightSpace}px`;
+            }
+
+            function scheduleExplainPaneLayout(block) {
+                updateExplainPaneLayout(block);
+                requestAnimationFrame(() => {
+                    updateExplainPaneLayout(block);
+                    block.classList.add('show-explain');
+                });
+            }
+
+            const codeBlocks = Array.from(container.querySelectorAll('.code-block'));
+            codeBlocks.forEach((block) => {
+                block.addEventListener('mouseenter', () => scheduleExplainPaneLayout(block));
+                block.addEventListener('mouseleave', () => block.classList.remove('show-explain'));
+            });
+
+            window.addEventListener('resize', () => {
+                codeBlocks.forEach((block) => {
+                    if (block.matches(':hover')) {
+                        updateExplainPaneLayout(block);
+                    }
+                });
+            });
+
+            const codeElements = container.querySelectorAll('.code-pane pre');
+            function escapeHtml(text) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, m => map[m]);
+            }
+
+            const keywords = [
+                '#include', 'const', 'double', 'int', 'float', 'void', 'std', 'extern',
+                'if', 'else', 'while', 'for', 'return', 'mat3', 'vec3', 'vec2', 'vec4',
+                'mat4', 'attribute', 'varying', 'uniform', 'precision', 'mediump',
+                'EMSCRIPTEN_KEEPALIVE', 'GLFWwindow', 'GLuint', 'GLint', 'GLsizei',
+                'GLenum', 'struct', 'class', 'do', 'using', 'namespace', 'new', 'delete',
+                'operator', 'template', 'nullptr', 'sizeof', 'static_cast', 'GL_FLOAT',
+                'GL_ARRAY_BUFFER', 'GL_STATIC_DRAW', 'GL_POINTS', 'GL_BLEND', 'GL_COLOR_BUFFER_BIT',
+                'GL_FALSE', 'GL_VERTEX_SHADER', 'GL_FRAGMENT_SHADER', 'GL_SRC_ALPHA',
+                'GL_ONE_MINUS_SRC_ALPHA', 'GLFW_MOUSE_BUTTON_LEFT', 'GLFW_PRESS', 'GLFW_RELEASE',
+                'sin', 'cos', 'exp', 'log', 'sqrt', 'pow', 'max', 'min', 'clamp', 'mix',
+                'smoothstep', 'discard', 'main'
+            ];
+
+            const punct = ['+', '-', '*', '/', '=', '<', '>', '!', '&', '|', '(', ')', '{', '}', '[', ']', ';', ',', '.', ':'];
+
+            codeElements.forEach((codeElement) => {
+                let result = codeElement.innerText;
+                const placeholders = {};
+                let placeholderIndex = 0;
+
+                function savePlaceholder(htmlContent) {
+                    const id = `__PLACEHOLDER_${placeholderIndex}__`;
+                    placeholders[id] = htmlContent;
+                    placeholderIndex++;
+                    return id;
+                }
+
+                function restorePlaceholders(str) {
+                    Object.entries(placeholders).forEach(([id, html]) => {
+                        str = str.replace(id, html);
+                    });
+                    return str;
+                }
+
+                result = result.replace(/\/\/[^\n]*/g, (match) => {
+                    return savePlaceholder(`<span class="syn-comment">${escapeHtml(match)}</span>`);
+                });
+
+                result = result.replace(/^(\d+)(\s+)/gm, (match, num, space) => {
+                    return savePlaceholder(`<span class="syn-linenum">${num}</span>`) + space;
+                });
+
+                keywords.forEach((kw) => {
+                    const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const regex = new RegExp(`\\b${escaped}\\b`, 'g');
+                    result = result.replace(regex, (match) => {
+                        return savePlaceholder(`<span class="syn-keyword">${escapeHtml(match)}</span>`);
+                    });
+                });
+
+                result = result.replace(/\b(\d+(?:\.\d+)?)\b/g, (match) => {
+                    return savePlaceholder(`<span class="syn-punct">${match}</span>`);
+                });
+
+                punct.forEach((p) => {
+                    const escaped = p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const regex = new RegExp(escaped, 'g');
+                    result = result.replace(regex, (match) => {
+                        return savePlaceholder(`<span class="syn-punct">${escapeHtml(match)}</span>`);
+                    });
+                });
+
+                codeElement.innerHTML = restorePlaceholders(result);
+            });
+        });
+    </script>
+</body>
+</html>
