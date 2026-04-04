@@ -116,6 +116,27 @@ extern "C" {
     void update_color_scale(float scale) {
         color_scale = scale;
     }
+
+    EMSCRIPTEN_KEEPALIVE
+    void add_camera_rotation(float yaw_delta, float pitch_delta) {
+        yaw += yaw_delta;
+        pitch += pitch_delta;
+
+        if (pitch > 1.5f) pitch = 1.5f;
+        if (pitch < -1.5f) pitch = -1.5f;
+    }
+
+    EMSCRIPTEN_KEEPALIVE
+    void set_camera_zoom(float new_zoom) {
+        zoom = new_zoom;
+        if (zoom < 0.2f) zoom = 0.2f;
+        if (zoom > 3.0f) zoom = 3.0f;
+    }
+
+    EMSCRIPTEN_KEEPALIVE
+    float get_camera_zoom() {
+        return zoom;
+    }
 }
 
 const char* vertex_shader_src = R"(

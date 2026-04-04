@@ -16,6 +16,10 @@
             gap: 0;
         }
 
+        html {
+            height: 100%;
+        }
+
         #page-intro {
             padding: 18px 18px 6px;
             display: flex;
@@ -83,6 +87,93 @@
             width: 100%;
         }
 
+        #drawer-toggle,
+        #immersive-orientation-overlay {
+            display: none;
+        }
+
+        #immersive-button {
+            position: fixed;
+            top: 14px;
+            right: 14px;
+            z-index: 1005;
+            padding: 10px 14px;
+            border: 1px solid #5a6e7a;
+            border-radius: 999px;
+            background: rgba(14, 32, 44, 0.92);
+            color: #effcff;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 13px;
+            cursor: pointer;
+            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
+        }
+
+        #immersive-button:hover {
+            background: rgba(20, 48, 64, 0.96);
+        }
+
+        #immersive-button:focus-visible,
+        #drawer-toggle:focus-visible {
+            outline: 2px solid #9fe8ff;
+            outline-offset: 2px;
+        }
+
+        #drawer-toggle {
+            position: fixed;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1004;
+            width: 34px;
+            height: 88px;
+            border: 1px solid #5a6e7a;
+            border-left: none;
+            border-radius: 0 14px 14px 0;
+            background: rgba(14, 32, 44, 0.92);
+            color: #effcff;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 24px;
+            line-height: 1;
+            cursor: pointer;
+            box-shadow: 4px 0 18px rgba(0, 0, 0, 0.25);
+        }
+
+        #immersive-orientation-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1006;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            box-sizing: border-box;
+            text-align: center;
+            background: radial-gradient(circle at center, rgba(22, 32, 44, 0.95) 0%, rgba(8, 12, 18, 0.98) 70%);
+            color: #f3fbff;
+            font-family: 'Courier New', 'Consolas', monospace;
+        }
+
+        #immersive-orientation-overlay .overlay-card {
+            max-width: 420px;
+            padding: 22px 18px;
+            border: 1px solid rgba(159, 232, 255, 0.35);
+            border-radius: 16px;
+            background: rgba(17, 30, 41, 0.78);
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        #immersive-orientation-overlay h2 {
+            margin: 0 0 10px;
+            font-size: 20px;
+            line-height: 1.2;
+        }
+
+        #immersive-orientation-overlay p {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.55;
+            color: #d7e4ea;
+        }
+
         #controles { 
             width: 300px; 
             padding: 20px; 
@@ -143,6 +234,10 @@
             height: auto;
             aspect-ratio: 4 / 3;
             border-radius: 8px;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
         }
 
         .slider-group { margin-bottom: 20px; margin-right: 5px; }
@@ -298,6 +393,101 @@
             color: #6FA8DC;
         }
 
+        body.immersive-mode {
+            overflow: hidden;
+            background: #000;
+        }
+
+        body.immersive-mode #page-intro,
+        body.immersive-mode #code-explanation-section {
+            display: none;
+        }
+
+        body.immersive-mode #app-layout {
+            position: fixed;
+            inset: 0;
+            margin: 0;
+            gap: 0;
+            z-index: 1;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        body.immersive-mode #main-content {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+        }
+
+        body.immersive-mode #canvas-container {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            border: none;
+            border-radius: 0;
+            background: #000;
+        }
+
+        body.immersive-mode canvas {
+            width: 100%;
+            height: 100%;
+            aspect-ratio: auto;
+            border: none;
+            border-radius: 0;
+        }
+
+        body.immersive-mode #controles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            margin: 0;
+            width: min(340px, 88vw);
+            max-height: 100dvh;
+            height: 100dvh;
+            overflow-y: auto;
+            z-index: 1002;
+            transform: translateX(-100%);
+            transition: transform 0.32s ease, box-shadow 0.32s ease;
+            border-radius: 0 14px 14px 0;
+        }
+
+        body.immersive-mode.drawer-open #controles {
+            transform: translateX(0);
+            box-shadow: 8px 0 24px rgba(0, 0, 0, 0.45);
+        }
+
+        body.immersive-mode #drawer-toggle,
+        body.immersive-mode #immersive-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        body.immersive-mode #immersive-button {
+            opacity: 1;
+            transition: opacity 0.28s ease, transform 0.28s ease;
+        }
+
+        body.immersive-mode #immersive-button.idle {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-8px);
+        }
+
+        body.immersive-mode.immersive-portrait-blocked #immersive-orientation-overlay {
+            display: flex;
+        }
+
+        body.immersive-mode.immersive-portrait-blocked #app-layout,
+        body.immersive-mode.immersive-portrait-blocked #drawer-toggle,
+        body.immersive-mode.immersive-portrait-blocked #controles {
+            visibility: hidden;
+        }
+
+        body.immersive-mode.immersive-portrait-blocked #immersive-button {
+            visibility: visible;
+        }
+
         @media (max-width: 1080px) {
             #page-intro {
                 padding: 14px 12px 6px;
@@ -355,6 +545,15 @@
     </style>
 </head>
 <body>
+
+    <button id="immersive-button" type="button" aria-label="Activar modo inmersivo">Modo inmersivo</button>
+    <button id="drawer-toggle" type="button" aria-label="Abrir controles" title="Abrir controles">❮</button>
+    <div id="immersive-orientation-overlay" aria-live="polite">
+        <div class="overlay-card">
+            <h2>Gira el dispositivo a horizontal</h2>
+            <p>El modo inmersivo está pensado para verse en horizontal, así la simulación ocupa toda la pantalla y los controles laterales se pueden usar mejor.</p>
+        </div>
+    </div>
 
     <header id="page-intro">
         <div id="page-intro-left">
@@ -868,6 +1067,298 @@
                 codeElement.innerHTML = restorePlaceholders(result);
             });
         });
+    </script>
+
+    <script>
+        (() => {
+            const body = document.body;
+            const immersiveButton = document.getElementById('immersive-button');
+            const drawerToggle = document.getElementById('drawer-toggle');
+            const orientationOverlay = document.getElementById('immersive-orientation-overlay');
+            const canvas = document.getElementById('canvas');
+            const controls = document.getElementById('controles');
+
+            let idleTimer = null;
+            const touchState = {
+                mode: 'none',
+                primaryId: null,
+                secondaryId: null,
+                lastX: 0,
+                lastY: 0,
+                pinchStartDistance: 0,
+                pinchStartZoom: 1.0
+            };
+
+            function isTouchDevice() {
+                return window.matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
+            }
+
+            function isPortraitMode() {
+                return window.matchMedia('(orientation: portrait)').matches || window.innerHeight > window.innerWidth;
+            }
+
+            function refreshDrawerToggleIcon() {
+                const isOpen = body.classList.contains('drawer-open');
+                drawerToggle.textContent = isOpen ? '❯' : '❮';
+                drawerToggle.setAttribute('aria-label', isOpen ? 'Cerrar controles' : 'Abrir controles');
+                drawerToggle.title = isOpen ? 'Cerrar controles' : 'Abrir controles';
+            }
+
+            function updateOrientationBlock() {
+                const immersiveActive = body.classList.contains('immersive-mode');
+                const portraitBlocked = immersiveActive && isTouchDevice() && isPortraitMode();
+                body.classList.toggle('immersive-portrait-blocked', portraitBlocked);
+                if (portraitBlocked) {
+                    body.classList.remove('drawer-open');
+                    refreshDrawerToggleIcon();
+                    resetTouchState();
+                }
+            }
+
+            function resetTouchState() {
+                touchState.mode = 'none';
+                touchState.primaryId = null;
+                touchState.secondaryId = null;
+                touchState.lastX = 0;
+                touchState.lastY = 0;
+                touchState.pinchStartDistance = 0;
+                touchState.pinchStartZoom = 1.0;
+            }
+
+            function getTouchById(touches, identifier) {
+                for (let index = 0; index < touches.length; index += 1) {
+                    if (touches[index].identifier === identifier) {
+                        return touches[index];
+                    }
+                }
+                return null;
+            }
+
+            function getTouchDistance(touchA, touchB) {
+                const deltaX = touchA.clientX - touchB.clientX;
+                const deltaY = touchA.clientY - touchB.clientY;
+                return Math.hypot(deltaX, deltaY);
+            }
+
+            function getCurrentZoom() {
+                if (typeof Module !== 'undefined' && Module.ccall) {
+                    try {
+                        return Module.ccall('get_camera_zoom', 'number', [], []);
+                    } catch (error) {
+                        return 1.0;
+                    }
+                }
+                return 1.0;
+            }
+
+            function rotateCamera(deltaX, deltaY) {
+                if (typeof Module !== 'undefined' && Module.ccall) {
+                    Module.ccall(
+                        'add_camera_rotation',
+                        'null',
+                        ['number', 'number'],
+                        [deltaX, deltaY]
+                    );
+                }
+            }
+
+            function setCameraZoom(newZoom) {
+                if (typeof Module !== 'undefined' && Module.ccall) {
+                    Module.ccall(
+                        'set_camera_zoom',
+                        'null',
+                        ['number'],
+                        [newZoom]
+                    );
+                }
+            }
+
+            function showExitButton() {
+                if (!body.classList.contains('immersive-mode')) return;
+                immersiveButton.classList.remove('idle');
+                window.clearTimeout(idleTimer);
+                idleTimer = window.setTimeout(() => {
+                    if (body.classList.contains('immersive-mode')) {
+                        immersiveButton.classList.add('idle');
+                    }
+                }, 2600);
+            }
+
+            function enterImmersiveMode() {
+                body.classList.add('immersive-mode');
+                body.classList.remove('drawer-open');
+                resetTouchState();
+                immersiveButton.textContent = 'Salir';
+                immersiveButton.setAttribute('aria-label', 'Salir del modo inmersivo');
+                refreshDrawerToggleIcon();
+                showExitButton();
+                updateOrientationBlock();
+
+                const fullscreenPromise = (document.documentElement.requestFullscreen && !document.fullscreenElement)
+                    ? document.documentElement.requestFullscreen().catch(() => {})
+                    : Promise.resolve();
+
+                fullscreenPromise.then(() => {
+                    if (screen.orientation && screen.orientation.lock && isTouchDevice()) {
+                        screen.orientation.lock('landscape').catch(() => {});
+                    }
+                });
+            }
+
+            function exitImmersiveMode() {
+                body.classList.remove('immersive-mode');
+                body.classList.remove('drawer-open');
+                body.classList.remove('immersive-portrait-blocked');
+                resetTouchState();
+                immersiveButton.classList.remove('idle');
+                immersiveButton.textContent = 'Modo inmersivo';
+                immersiveButton.setAttribute('aria-label', 'Activar modo inmersivo');
+                refreshDrawerToggleIcon();
+                window.clearTimeout(idleTimer);
+
+                if (document.fullscreenElement && document.exitFullscreen) {
+                    document.exitFullscreen().catch(() => {});
+                }
+            }
+
+            function toggleImmersiveMode() {
+                if (body.classList.contains('immersive-mode')) {
+                    exitImmersiveMode();
+                } else {
+                    enterImmersiveMode();
+                }
+            }
+
+            function toggleDrawer() {
+                if (!body.classList.contains('immersive-mode') || body.classList.contains('immersive-portrait-blocked')) {
+                    return;
+                }
+                body.classList.toggle('drawer-open');
+                refreshDrawerToggleIcon();
+            }
+
+            function handleFullscreenChange() {
+                if (!document.fullscreenElement && body.classList.contains('immersive-mode')) {
+                    exitImmersiveMode();
+                    return;
+                }
+                updateOrientationBlock();
+            }
+
+            immersiveButton.addEventListener('click', toggleImmersiveMode);
+            drawerToggle.addEventListener('click', toggleDrawer);
+
+            document.addEventListener('pointermove', showExitButton, { passive: true });
+            document.addEventListener('pointerdown', showExitButton, { passive: true });
+            document.addEventListener('touchstart', showExitButton, { passive: true });
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && body.classList.contains('immersive-mode')) {
+                    exitImmersiveMode();
+                    return;
+                }
+                showExitButton();
+            });
+
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            window.addEventListener('resize', updateOrientationBlock);
+            window.addEventListener('orientationchange', updateOrientationBlock);
+
+            if (controls) {
+                document.addEventListener('pointerdown', (event) => {
+                    if (!body.classList.contains('drawer-open')) return;
+                    if (controls.contains(event.target) || drawerToggle.contains(event.target)) return;
+                    body.classList.remove('drawer-open');
+                    refreshDrawerToggleIcon();
+                });
+            }
+
+            if (canvas) {
+                canvas.addEventListener('click', showExitButton);
+
+                canvas.addEventListener('touchstart', (event) => {
+                    if (body.classList.contains('immersive-portrait-blocked')) {
+                        return;
+                    }
+
+                    showExitButton();
+
+                    if (event.touches.length === 1) {
+                        const touch = event.touches[0];
+                        touchState.mode = 'rotate';
+                        touchState.primaryId = touch.identifier;
+                        touchState.secondaryId = null;
+                        touchState.lastX = touch.clientX;
+                        touchState.lastY = touch.clientY;
+                    } else if (event.touches.length >= 2) {
+                        const firstTouch = event.touches[0];
+                        const secondTouch = event.touches[1];
+                        touchState.mode = 'pinch';
+                        touchState.primaryId = firstTouch.identifier;
+                        touchState.secondaryId = secondTouch.identifier;
+                        touchState.pinchStartDistance = getTouchDistance(firstTouch, secondTouch);
+                        touchState.pinchStartZoom = getCurrentZoom();
+                    }
+
+                    event.preventDefault();
+                }, { passive: false });
+
+                canvas.addEventListener('touchmove', (event) => {
+                    if (body.classList.contains('immersive-portrait-blocked')) {
+                        return;
+                    }
+
+                    showExitButton();
+
+                    if (touchState.mode === 'rotate' && event.touches.length === 1) {
+                        const touch = getTouchById(event.touches, touchState.primaryId) || event.touches[0];
+                        const deltaX = (touch.clientX - touchState.lastX) * 0.008;
+                        const deltaY = (touch.clientY - touchState.lastY) * 0.008;
+                        rotateCamera(deltaX, deltaY);
+                        touchState.lastX = touch.clientX;
+                        touchState.lastY = touch.clientY;
+                    } else if (event.touches.length >= 2) {
+                        const touchA = getTouchById(event.touches, touchState.primaryId) || event.touches[0];
+                        const touchB = getTouchById(event.touches, touchState.secondaryId) || event.touches[1];
+                        const currentDistance = getTouchDistance(touchA, touchB);
+                        const nextZoom = touchState.pinchStartZoom * (currentDistance / Math.max(1, touchState.pinchStartDistance));
+                        setCameraZoom(nextZoom);
+                        touchState.mode = 'pinch';
+                    }
+
+                    event.preventDefault();
+                }, { passive: false });
+
+                canvas.addEventListener('touchend', (event) => {
+                    if (body.classList.contains('immersive-portrait-blocked')) {
+                        resetTouchState();
+                        return;
+                    }
+
+                    showExitButton();
+
+                    if (event.touches.length === 1) {
+                        const remainingTouch = event.touches[0];
+                        touchState.mode = 'rotate';
+                        touchState.primaryId = remainingTouch.identifier;
+                        touchState.secondaryId = null;
+                        touchState.lastX = remainingTouch.clientX;
+                        touchState.lastY = remainingTouch.clientY;
+                    } else if (event.touches.length === 0) {
+                        resetTouchState();
+                    }
+
+                    event.preventDefault();
+                }, { passive: false });
+
+                canvas.addEventListener('touchcancel', (event) => {
+                    resetTouchState();
+                    event.preventDefault();
+                }, { passive: false });
+            }
+
+            refreshDrawerToggleIcon();
+            updateOrientationBlock();
+        })();
     </script>
 </body>
 </html>
