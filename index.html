@@ -551,7 +551,22 @@
             }
 
             #main-content {
-                padding: 0 12px 12px;
+                padding: 0 0 12px;
+            }
+
+            #canvas-container {
+                width: 100%;
+                padding: 0;
+                box-sizing: border-box;
+                justify-content: stretch;
+                align-items: stretch;
+            }
+
+            canvas {
+                display: block;
+                width: 100%;
+                max-width: none;
+                margin: 0;
             }
 
             #code-container {
@@ -562,6 +577,11 @@
             #app-layout {
                 flex-direction: column;
                 gap: 10px;
+                align-items: stretch;
+            }
+
+            #main-content {
+                width: 100%;
             }
 
             .code-slide {
