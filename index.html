@@ -1106,6 +1106,10 @@
                 pinchLastDistance: 0
             };
 
+            const TOUCH_ROTATION_SENSITIVITY = 0.0065;
+            const PINCH_ZOOM_SENSITIVITY = 1.08;
+            const PINCH_WHEEL_SENSITIVITY = 3.2;
+
             function isTouchDevice() {
                 return window.matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
             }
@@ -1361,8 +1365,8 @@
 
                     if (touchState.mode === 'rotate' && event.touches.length === 1) {
                         const touch = getTouchById(event.touches, touchState.primaryId) || event.touches[0];
-                        const deltaX = (touch.clientX - touchState.lastX) * 0.008;
-                        const deltaY = (touch.clientY - touchState.lastY) * 0.008;
+                        const deltaX = (touch.clientX - touchState.lastX) * TOUCH_ROTATION_SENSITIVITY;
+                        const deltaY = (touch.clientY - touchState.lastY) * TOUCH_ROTATION_SENSITIVITY;
                         rotateCamera(deltaX, deltaY);
                         touchState.lastX = touch.clientX;
                         touchState.lastY = touch.clientY;
@@ -1372,12 +1376,14 @@
                         const currentDistance = getTouchDistance(touchA, touchB);
 
                         if (hasDirectCameraApi()) {
-                            const nextZoom = touchState.pinchStartZoom * (currentDistance / Math.max(1, touchState.pinchStartDistance));
+                            const distanceRatio = currentDistance / Math.max(1, touchState.pinchStartDistance);
+                            const adjustedRatio = Math.pow(distanceRatio, PINCH_ZOOM_SENSITIVITY);
+                            const nextZoom = touchState.pinchStartZoom * adjustedRatio;
                             setCameraZoom(nextZoom);
                         } else {
                             const distanceDelta = currentDistance - touchState.pinchLastDistance;
                             if (Math.abs(distanceDelta) > 0.2) {
-                                dispatchWheelZoom(-distanceDelta * 3.0, touchA);
+                                dispatchWheelZoom(-distanceDelta * PINCH_WHEEL_SENSITIVITY, touchA);
                             }
                             touchState.pinchLastDistance = currentDistance;
                         }
