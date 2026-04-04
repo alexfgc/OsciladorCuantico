@@ -1102,7 +1102,8 @@
                 lastX: 0,
                 lastY: 0,
                 pinchStartDistance: 0,
-                pinchStartZoom: 1.0
+                pinchStartZoom: 1.0,
+                pinchLastDistance: 0
             };
 
             function isTouchDevice() {
@@ -1139,6 +1140,7 @@
                 touchState.lastY = 0;
                 touchState.pinchStartDistance = 0;
                 touchState.pinchStartZoom = 1.0;
+                touchState.pinchLastDistance = 0;
             }
 
             function getTouchById(touches, identifier) {
@@ -1167,26 +1169,57 @@
                 return 1.0;
             }
 
+            function hasDirectCameraApi() {
+                if (typeof Module === 'undefined' || !Module.ccall) return false;
+                try {
+                    Module.ccall('get_camera_zoom', 'number', [], []);
+                    return true;
+                } catch (error) {
+                    return false;
+                }
+            }
+
             function rotateCamera(deltaX, deltaY) {
                 if (typeof Module !== 'undefined' && Module.ccall) {
-                    Module.ccall(
-                        'add_camera_rotation',
-                        'null',
-                        ['number', 'number'],
-                        [deltaX, deltaY]
-                    );
+                    try {
+                        Module.ccall(
+                            'add_camera_rotation',
+                            'null',
+                            ['number', 'number'],
+                            [deltaX, deltaY]
+                        );
+                    } catch (error) {
+                        // Si el export no existe en esta build, se ignora sin romper gestos.
+                    }
                 }
             }
 
             function setCameraZoom(newZoom) {
                 if (typeof Module !== 'undefined' && Module.ccall) {
-                    Module.ccall(
-                        'set_camera_zoom',
-                        'null',
-                        ['number'],
-                        [newZoom]
-                    );
+                    try {
+                        Module.ccall(
+                            'set_camera_zoom',
+                            'null',
+                            ['number'],
+                            [newZoom]
+                        );
+                    } catch (error) {
+                        // Se gestiona con fallback de rueda en el handler táctil.
+                    }
                 }
+            }
+
+            function dispatchWheelZoom(pixelDeltaY, touch) {
+                if (!canvas) return;
+                const wheelEvent = new WheelEvent('wheel', {
+                    deltaY: pixelDeltaY,
+                    deltaMode: 0,
+                    bubbles: true,
+                    cancelable: true,
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                canvas.dispatchEvent(wheelEvent);
             }
 
             function showExitButton() {
@@ -1313,6 +1346,7 @@
                         touchState.secondaryId = secondTouch.identifier;
                         touchState.pinchStartDistance = getTouchDistance(firstTouch, secondTouch);
                         touchState.pinchStartZoom = getCurrentZoom();
+                        touchState.pinchLastDistance = touchState.pinchStartDistance;
                     }
 
                     event.preventDefault();
@@ -1336,8 +1370,18 @@
                         const touchA = getTouchById(event.touches, touchState.primaryId) || event.touches[0];
                         const touchB = getTouchById(event.touches, touchState.secondaryId) || event.touches[1];
                         const currentDistance = getTouchDistance(touchA, touchB);
-                        const nextZoom = touchState.pinchStartZoom * (currentDistance / Math.max(1, touchState.pinchStartDistance));
-                        setCameraZoom(nextZoom);
+
+                        if (hasDirectCameraApi()) {
+                            const nextZoom = touchState.pinchStartZoom * (currentDistance / Math.max(1, touchState.pinchStartDistance));
+                            setCameraZoom(nextZoom);
+                        } else {
+                            const distanceDelta = currentDistance - touchState.pinchLastDistance;
+                            if (Math.abs(distanceDelta) > 0.2) {
+                                dispatchWheelZoom(-distanceDelta * 3.0, touchA);
+                            }
+                            touchState.pinchLastDistance = currentDistance;
+                        }
+
                         touchState.mode = 'pinch';
                     }
 
