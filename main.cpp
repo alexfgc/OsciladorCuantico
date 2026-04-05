@@ -35,6 +35,10 @@ double get_normalization(int n, double omega) {
 }
 
 double psi_1d(int n, double x, double omega) {
+    if (omega <= 0.0) {
+        return 1.0;
+    }
+
     double q = x * std::sqrt(omega);
     return get_normalization(n, omega) * std::hermite(n, q) * std::exp(-0.5 * q * q);
 }
@@ -71,9 +75,9 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 extern "C" {
     EMSCRIPTEN_KEEPALIVE
     void update_quantum_state(int nxA, int nyA, int nzA, int nxB, int nyB, int nzB, float wx, float wy, float wz) {
-        double omega_x = std::max(0.05, static_cast<double>(wx));
-        double omega_y = std::max(0.05, static_cast<double>(wy));
-        double omega_z = std::max(0.05, static_cast<double>(wz));
+        double omega_x = std::max(0.0, static_cast<double>(wx));
+        double omega_y = std::max(0.0, static_cast<double>(wy));
+        double omega_z = std::max(0.0, static_cast<double>(wz));
 
         double EA = omega_x * (nxA + 0.5) + omega_y * (nyA + 0.5) + omega_z * (nzA + 0.5);
         double EB = omega_x * (nxB + 0.5) + omega_y * (nyB + 0.5) + omega_z * (nzB + 0.5);
